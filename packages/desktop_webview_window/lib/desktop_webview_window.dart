@@ -169,7 +169,6 @@ class WebviewWindow {
   static Future<void> clearAll({
     String userDataFolderWindows = 'webview_window_WebView2',
   }) async {
-    await _channel.invokeMethod('clearAll');
 
     // FIXME(boyan01) Move the logic to windows platform if WebView2 provider a way to clean caches.
     // https://docs.microsoft.com/en-us/microsoft-edge/webview2/concepts/user-data-folder#create-user-data-folders
@@ -188,12 +187,14 @@ class WebviewWindow {
             await webview2Dir.delete(recursive: true);
             break;
           } catch (e) {
-            debugPrint("delete cache failed. retring.... $e");
+            debugPrint("delete cache failed. retrying.... $e");
           }
           // wait to ensure all web window has been closed and file handle has been release.
           await Future.delayed(const Duration(seconds: 1));
         }
       }
+    } else {
+      await _channel.invokeMethod('clearAll');
     }
   }
 }

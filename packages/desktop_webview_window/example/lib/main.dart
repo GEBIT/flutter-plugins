@@ -26,7 +26,6 @@ class _MyAppState extends State<MyApp> {
   final TextEditingController _controller = TextEditingController(
     text: 'https://example.com',
   );
-
   bool? _webviewAvailable;
 
   @override

@@ -157,42 +157,15 @@ void WebView::OnWebviewControllerCreated() {
                      flutter::EncodableValue(web_view_id_)},
                 }));
 
-            if (triggerOnUrlRequestedEvent) {
-              LPWSTR uri;
-              args->get_Uri(&uri);
-
-              auto result_handler =
-                  std::make_unique<flutter::MethodResultFunctions<>>(
-                      [uri, sender,
-                       this](const flutter::EncodableValue *success_value) {
-                        const bool letPass = std::get<bool>(*success_value);
-                        if (letPass) {
-                          this->setTriggerOnUrlRequestedEvent(false);
-                          sender->Navigate(uri);
-                        }
-                      },
-                      nullptr, nullptr);
-
-              method_channel_->InvokeMethod(
-                  "onUrlRequested",
-                  std::make_unique<flutter::EncodableValue>(
-                      flutter::EncodableMap{
-                          {flutter::EncodableValue("id"),
-                           flutter::EncodableValue(web_view_id_)},
-                          {flutter::EncodableValue("url"),
-                           flutter::EncodableValue(
-                               wide_to_utf8(std::wstring(uri)))},
-                      }),
-                  std::move(result_handler));
-
-              // navigation is canceled here and retriggered later from the
-              // callback passed to the method channel
-              args->put_Cancel(true);
-            } else {
-              args->put_Cancel(false);
-              triggerOnUrlRequestedEvent = true;
-            }
-            return S_OK;
+            LPWSTR uri;
+            args->get_Uri(&uri);
+            method_channel_->InvokeMethod(
+                "onUrlRequested",
+                std::make_unique<flutter::EncodableValue>(flutter::EncodableMap{
+                    {flutter::EncodableValue("id"), flutter::EncodableValue(web_view_id_)},
+                    {flutter::EncodableValue("url"), flutter::EncodableValue(wide_to_utf8(std::wstring(uri)))},
+                }));
+             return S_OK;
           })
           .Get(),
       nullptr);

@@ -25,7 +25,7 @@ class WebviewImpl extends Webview {
 
   final ValueNotifier<bool> _isNavigating = ValueNotifier<bool>(false);
 
-  OnUrlRequestCallback? _onUrlRequestCallback = null;
+  OnUrlRequestCallback? _onUrlRequestCallback;
 
   final Set<OnWebMessageReceivedCallback> _onWebMessageReceivedCallbacks = {};
 
