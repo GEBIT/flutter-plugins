@@ -5,13 +5,15 @@ import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:window_manager/window_manager.dart';
 
-void main(List<String> args) {
+Future<void> main(List<String> args) async {
   debugPrint('args: $args');
   WidgetsFlutterBinding.ensureInitialized();
   if (runWebViewTitleBarWidget(args)) {
     return;
   }
+  await windowManager.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -65,32 +67,7 @@ class _MyAppState extends State<MyApp> {
                 );
 
                 webview
-                  ..registerJavaScriptMessageHandler("test", (name, body) {
-                    debugPrint('on javaScipt message: $name $body');
-                  })
                   ..setApplicationNameForUserAgent(" WebviewExample/1.0.0")
-                  ..setPromptHandler((prompt, defaultText) {
-                    if (prompt == "test") {
-                      return "Hello World!";
-                    } else if (prompt == "init") {
-                      return "initial prompt";
-                    }
-                    return "";
-                  })
-                  ..addScriptToExecuteOnDocumentCreated("""
-  const mixinContext = {
-    platform: 'Desktop',
-    conversation_id: 'conversationId',
-    immersive: false,
-    app_version: '1.0.0',
-    appearance: 'dark',
-  }
-  window.MixinContext = {
-    getContext: function() {
-      return JSON.stringify(mixinContext)
-    }
-  }
-""")
                   ..launch("http://localhost:3000/test.html");
               },
               icon: const Icon(Icons.bug_report),
@@ -136,23 +113,6 @@ class _MyAppState extends State<MyApp> {
       ),
     );
 
-    final timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-      try {
-        final cookies = await webview.getAllCookies();
-
-        if (cookies.isEmpty) {
-          debugPrint('⚠️ no cookies found');
-        }
-
-        for (final cookie in cookies) {
-          debugPrint('cookie: ${cookie.toJson()}');
-        }
-      } catch (e, stack) {
-        debugPrint('getAllCookies error: $e');
-        debugPrintStack(stackTrace: stack);
-      }
-    });
-
     webview
       ..setBrightness(Brightness.dark)
       ..setApplicationNameForUserAgent(" WebviewExample/1.0.0")
@@ -167,36 +127,11 @@ class _MyAppState extends State<MyApp> {
         // grant navigation request
         return true;
       })
-      ..openDevToolsWindow()
       ..onClose.whenComplete(() {
         debugPrint("on close");
-        timer.cancel();
       });
-    await Future.delayed(const Duration(seconds: 2));
-    for (final javaScript in _javaScriptToEval) {
-      try {
-        final ret = await webview.evaluateJavaScript(javaScript);
-        debugPrint('evaluateJavaScript: $ret');
-      } catch (e) {
-        debugPrint('evaluateJavaScript error: $e \n $javaScript');
-      }
-    }
   }
 }
-
-const _javaScriptToEval = [
-  """
-  function test() {
-    return;
-  }
-  test();
-  """,
-  'eval({"name": "test", "user_agent": navigator.userAgent})',
-  '1 + 1',
-  'undefined',
-  '1.0 + 1.0',
-  '"test"',
-];
 
 Future<String> _getWebViewPath() async {
   final document = await getApplicationDocumentsDirectory();
