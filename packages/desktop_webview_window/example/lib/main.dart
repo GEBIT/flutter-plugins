@@ -5,7 +5,6 @@ import 'package:desktop_webview_window/desktop_webview_window.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:window_manager/window_manager.dart';
 
 Future<void> main(List<String> args) async {
   debugPrint('args: $args');
@@ -13,7 +12,6 @@ Future<void> main(List<String> args) async {
   if (runWebViewTitleBarWidget(args)) {
     return;
   }
-  await windowManager.ensureInitialized();
   runApp(const MyApp());
 }
 
